@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Rule Engine UI</title>
+</head>
+<body>
+    <h1>Rule Engine</h1>
+    <h2>Create Rule</h2>
+    <textarea id="ruleInput" rows="4" cols="50"></textarea>
+    <button onclick="createRule()">Create Rule</button>
+    <pre id="ruleOutput"></pre>
+
+    <h2>Combine Rules</h2>
+    <textarea id="rulesInput" rows="4" cols="50"></textarea>
+    <button onclick="combineRules()">Combine Rules</button>
+    <pre id="combinedOutput"></pre>
+
+    <h2>Evaluate Rule</h2>
+    <textarea id="dataInput" rows="4" cols="50"></textarea>
+    <button onclick="evaluateRule()">Evaluate Rule</button>
+    <pre id="evaluationOutput"></pre>
+
+<script>
+    async function createRule() {
+        const ruleString = document.getElementById('ruleInput').value;
+        const response = await fetch('http://127.0.0.1:5000/create_rule', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ rule_string: ruleString })
+        });
+        const result = await response.json();
+        document.getElementById('ruleOutput').textContent = JSON.stringify(JSON.parse(result.ast), null, 2);
+    }
+
+    async function combineRules() {
+        const ruleStrings = document.getElementById('rulesInput').value.split('\n');
+        const response = await fetch('http://127.0.0.1:5000/combine_rules', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ rule_strings: ruleStrings })
+        });
+        const result = await response.json();
+        document.getElementById('combinedOutput').textContent = JSON.stringify(JSON.parse(result.combined_ast), null, 2);
+    }
+
+    async function evaluateRule() {
+        const ast = document.getElementById('ruleOutput').textContent;
+        const userData = JSON.parse(document.getElementById('dataInput').value);
+        const response = await fetch('http://127.0.0.1:5000/evaluate_rule', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ ast: JSON.stringify(JSON.parse(ast)), data: userData })
+        });
+        const result = await response.json();
+        document.getElementById('evaluationOutput').textContent = JSON.stringify(result, null, 2);
+    }
+</script>
+
+</body>
+</html>
